@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gửi Em ❤️</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:linear-gradient(135deg,#ff758c,#ff7eb3);
+overflow:hidden;
+color:white;
+}
+
+#login{
+position:fixed;
+inset:0;
+background:#ff5f8a;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:20;
+}
+
+#display{
+height:40px;
+width:160px;
+border-bottom:2px solid white;
+margin-bottom:20px;
+font-size:26px;
+letter-spacing:8px;
+}
+
+.keypad{
+display:grid;
+grid-template-columns:repeat(3,70px);
+gap:12px;
+}
+
+.keypad button{
+width:70px;
+height:70px;
+border-radius:50%;
+background:rgba(255,255,255,.25);
+font-size:22px;
+box-shadow:0 0 10px rgba(255,255,255,.4);
+border:none;
+color:white;
+cursor:pointer;
+}
+
+.keypad button:active{
+transform:scale(.9);
+box-shadow:0 0 30px white;
+}
+
+.glow{animation:glow .3s;}
+@keyframes glow{
+0%{box-shadow:0 0 0 white;}
+50%{box-shadow:0 0 40px white;}
+100%{box-shadow:0 0 0 white;}
+}
+
+.container{text-align:center;padding-top:40px;display:none;}
+
+img{
+width:220px;
+border-radius:25px;
+box-shadow:0 0 30px rgba(0,0,0,.4);
+animation:zoomImg 10s infinite alternate;
+}
+
+@keyframes zoomImg{
+from{transform:scale(1);}
+to{transform:scale(1.1);}
+}
+
+#counter{margin:10px;}
+
+.loveBtn{
+margin-top:20px;
+padding:14px 40px;
+border-radius:40px;
+border:none;
+font-size:18px;
+color:white;
+background:rgba(255,255,255,.25);
+backdrop-filter:blur(10px);
+box-shadow:0 0 20px rgba(255,255,255,.6);
+cursor:pointer;
+transition:.3s;
+}
+
+.loveBtn:hover{
+transform:scale(1.1);
+box-shadow:0 0 40px white;
+}
+
+#overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.4);
+backdrop-filter:blur(6px);
+display:none;
+z-index:15;
+}
+
+#letter{
+display:none;
+background:white;
+color:black;
+width:85%;
+margin:30px auto;
+padding:25px;
+border-radius:20px;
+position:relative;
+z-index:30;
+animation:zoom .5s ease;
+}
+
+@keyframes zoom{
+from{transform:scale(.8);opacity:0;}
+to{transform:scale(1);opacity:1;}
+}
+
+@keyframes float{
+0%{transform:translateY(0) scale(.8);opacity:0;}
+20%{opacity:1;}
+100%{transform:translateY(-800px) scale(1.2);opacity:0;}
+}
+
+.shake{animation:shake .3s;}
+@keyframes shake{
+0%{transform:translateX(0)}
+25%{transform:translateX(-5px)}
+50%{transform:translateX(5px)}
+75%{transform:translateX(-5px)}
+100%{transform:translateX(0)}
+}
+
+canvas{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:5;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+h1{font-size:24px;}
+#display{width:130px;font-size:20px;}
+.keypad button{width:58px;height:58px;font-size:18px;}
+img{width:170px;}
+.loveBtn{font-size:18px;padding:14px 36px;}
+#letter{width:92%;font-size:15px;}
+#typing{line-height:1.7;}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fire"></canvas>
+
+<audio id="bgm" loop>
+<source src="music1.mp3">
+</audio>
+
+<div id="overlay" onclick="closeLetter()"></div>
+
+<div id="login">
+<h1>Nhập mật khẩu 💕</h1>
+<div id="display"></div>
+
+<div class="keypad">
+<button onclick="press('1')">1</button>
+<button onclick="press('2')">2</button>
+<button onclick="press('3')">3</button>
+<button onclick="press('4')">4</button>
+<button onclick="press('5')">5</button>
+<button onclick="press('6')">6</button>
+<button onclick="press('7')">7</button>
+<button onclick="press('8')">8</button>
+<button onclick="press('9')">9</button>
+<button onclick="clearPw()">⌫</button>
+<button onclick="press('0')">0</button>
+<button onclick="check()">OK</button>
+</div>
+</div>
+
+<div class="container" id="main">
+
+<h1>Happy Valentine 💖</h1>
+
+<img id="slide" src="love1.jpg">
+
+<div id="counter"></div>
+
+<p>
+Cảm ơn em đã bước vào cuộc đời anh.<br>
+Anh mong mình sẽ cùng nhau đi thật xa ❤️
+</p>
+
+<button class="loveBtn" onclick="openLetter()">💌 Mở thư tình</button>
+
+<div id="letter">
+<h2>Gửi người anh yêu</h2>
+<p id="typing"></p>
+</div>
+
+</div>
+
+<script>
+const PASSWORD="123";
+const music=document.getElementById("bgm");
+let input="";
+
+const images=["love1.jpg","love2.jpg","love3.jpg"];
+let si=0;
+
+setInterval(()=>{
+si=(si+1)%images.length;
+slide.src=images[si];
+},3000);
+
+// ngày quen nhau
+const loveDay=new Date("2025-01-01");
+
+setInterval(()=>{
+let diff=Math.floor((new Date()-loveDay)/86400000);
+counter.innerHTML="Chúng mình đã bên nhau "+diff+" ngày ❤️";
+},1000);
+
+function playMusic(){if(music.paused) music.play();}
+
+function press(n){
+playMusic();
+display.classList.add("glow");
+setTimeout(()=>display.classList.remove("glow"),300);
+if(input.length<6){input+=n;render();}
+}
+
+function clearPw(){input=input.slice(0,-1);render();}
+function render(){display.innerHTML="•".repeat(input.length);}
+
+function check(){
+playMusic();
+if(input===PASSWORD){
+login.style.display="none";
+main.style.display="block";
+firework();
+}else{
+login.classList.add("shake");
+setTimeout(()=>login.classList.remove("shake"),300);
+input="";render();
+}
+}
+
+const text=`Anh không giỏi nói lời hoa mỹ...
+nhưng anh thật sự trân trọng từng khoảnh khắc bên em.
+
+Nếu được chọn lại, anh vẫn sẽ chọn em.
+
+Mong rằng sau này người ở cạnh anh vẫn luôn là em 🥺❤️
+
+Anh yêu em rất nhiều.`;
+
+function openLetter(){
+overlay.style.display="block";
+letter.style.display="block";
+let i=0;typing.innerHTML="";
+let t=setInterval(()=>{
+typing.innerHTML+=text.charAt(i);
+i++;
+if(i>=text.length) clearInterval(t);
+},40);
+}
+
+function closeLetter(){
+overlay.style.display="none";
+letter.style.display="none";
+}
+
+// tim + ảnh bay
+const floatImgs=["love1.jpg","love2.jpg","love3.jpg"];
+setInterval(()=>{
+let f=document.createElement("div");
+f.style.position="fixed";
+f.style.left=Math.random()*90+"%";
+f.style.bottom="0";
+
+if(Math.random()>0.5){
+f.innerHTML="❤️";
+f.style.fontSize="26px";
+}else{
+let im=document.createElement("img");
+im.src=floatImgs[Math.floor(Math.random()*floatImgs.length)];
+im.style.width="40px";
+im.style.borderRadius="10px";
+f.appendChild(im);
+}
+
+f.style.animation="float 5s linear forwards";
+document.body.appendChild(f);
+setTimeout(()=>f.remove(),5000);
+},300);
+
+// swipe ảnh
+let sx=0;
+slide.addEventListener("touchstart",e=>sx=e.touches[0].clientX);
+slide.addEventListener("touchend",e=>{
+let dx=e.changedTouches[0].clientX-sx;
+if(dx>50){si=(si-1+images.length)%images.length;slide.src=images[si];}
+if(dx<-50){si=(si+1)%images.length;slide.src=images[si];}
+});
+
+// fullscreen + rung
+document.body.addEventListener("click",()=>{document.documentElement.requestFullscreen?.();},{once:true});
+document.body.addEventListener("touchstart",()=>{navigator.vibrate?.(30);});
+
+// pháo hoa
+const c=document.getElementById("fire");
+const ctx=c.getContext("2d");
+c.width=innerWidth;c.height=innerHeight;
+let p=[];
+
+function firework(){
+for(let i=0;i<120;i++){
+p.push({
+x:Math.random()*c.width,
+y:Math.random()*c.height/2,
+vx:(Math.random()-.5)*8,
+vy:(Math.random()-.5)*8,
+life:80
+});
+}
+}
+
+function anim(){
+ctx.clearRect(0,0,c.width,c.height);
+p.forEach((a,i)=>{
+ctx.beginPath();
+ctx.arc(a.x,a.y,2,0,Math.PI*2);
+ctx.fillStyle="white";
+ctx.fill();
+a.x+=a.vx;
+a.y+=a.vy;
+a.life--;
+if(a.life<=0) p.splice(i,1);
+});
+requestAnimationFrame(anim);
+}
+anim();
+
+// mobile auto firework
+if(innerWidth<600){
+setInterval(()=>firework(),4000);
+}
+</script>
+
+</body>
+</html>
